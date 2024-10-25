@@ -225,6 +225,8 @@ if st.session_state.scatter is not None and st.session_state.scatter['selection'
     # selected_df = pd.DataFrame(selected_points)
     # st.dataframe(selected_df)
 
+with st.expander('Data'):
+    st.write(df)
 # Category analysis
 st.subheader("Category Analysis")
 st.markdown("""
@@ -418,22 +420,22 @@ st.plotly_chart(fig_contributors, config = config, use_container_width=True)
 c1,c2 = st.columns([2,3])
 with c1:
     # Detailed contributor stats
-    st.subheader("Top Contributors Statistics")
+    st.subheader("Top Mentions in AMA Related Threads Titles")
     # st.markdown("""
     #     This table highlights top contributors with a gradient for "Number of AMAs" and bar charts for "Average Comments" and "Average Upvotes," enabling quick identification of top performers.
     # """)
     st.dataframe(
-        top_contributors
-        .rename(columns={'Average Comments': 'Avg Comments', 'Average Upvotes': 'Avg Upvotes'})
-        .style.background_gradient(cmap='YlOrRd', subset=['Number of AMAs'])
-        .format({'Number of AMAs': '{:.0f}', 'Avg Comments': '{:.0f}', 'Avg Upvotes': '{:.0f}'})
+        top_contributors.reset_index()[['name','Number of AMAs','Average Comments','Average Upvotes']]
+        .rename(columns={'name': 'Personality','Number of AMAs':'Mentions in Titles','Average Comments': 'Avg Comments', 'Average Upvotes': 'Avg Upvotes'})
+        .style.background_gradient(cmap='YlOrRd', subset=['Mentions in Titles'])
+        .format({'Mentions in Titles': '{:.0f}', 'Avg Comments': '{:.0f}', 'Avg Upvotes': '{:.0f}'})
         .bar(subset=['Avg Comments', 'Avg Upvotes'], color='#90CAF9')
         .set_caption('Top Contributors Statistics')
         .set_table_styles([{'selector': 'th', 'props': [('text-align', 'center')]}])
         .set_properties(**{'text-align': 'center'})
-        .set_properties(subset=['Number of AMAs'], **{'font-weight': 'bold'})
+        .set_properties(subset=['Mentions in Titles'], **{'font-weight': 'bold'})
         .set_properties(subset=['Avg Comments', 'Avg Upvotes'], **{'font-style': 'italic'})
-    )
+    ,hide_index=True)
 with c2:
     # Category distribution
     st.subheader("Category Distribution")
@@ -455,7 +457,7 @@ with c2:
             yanchor="top",
             y=0.99,
             xanchor="left",
-            x=1.1,
+            x=1,
             bgcolor='rgba(0,0,0,0)'
         ),
     )
