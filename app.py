@@ -104,7 +104,7 @@ with stylable_container(
     st.markdown("""
         This analysis focuses on measuring engagement in Ask Me Anything (AMA) threads from the <a style='color: white' href = 'https://www.reddit.com/r/nba/' target='_blank'>NBA subreddit</a>. 
         It considers engagement based on the number of comments and upvotes for NBA personalities and affiliated figures. 
-        The analysis aims to provide insights into the level of community interaction and the popularity of different AMAs.
+        The analysis aims to provide insights into the level of community interaction and the popularity of different AMAs and related threads.
     """, unsafe_allow_html = True)
 
 
