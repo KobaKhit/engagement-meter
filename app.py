@@ -3,6 +3,8 @@ import plotly.express as px
 import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
 import numpy as np
+import webbrowser
+
 
 # Page configuration
 st.set_page_config(
@@ -138,12 +140,8 @@ st.markdown("""
     **Kevin Garnett** had the most engagement during his AMA. An NBA team attendant had the second most engaging thread.
 """)
 
-c1,c2 = st.columns(2)
-with c1:
-    st.markdown('**Community Engagement: Comments vs Upvotes**')
-with c2:
-    # st.write('')
-    link_container = st.container()
+
+st.markdown('**Community Engagement: Comments vs Upvotes**')
 
 log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
 
@@ -176,6 +174,26 @@ scatter_fig = px.scatter(
     template='plotly_white',
     hover_name='title'
 )
+
+
+
+# # Add link annotation
+# scatter_fig.add_annotation(
+#     text="<a href='https://www.reddit.com/r/nba/comments/2g3g3g/ama_with_kevin_garnett/' target='_blank'>Kevin Garnett</a>",
+#     yanchor="top",
+#     yref="paper",
+#     y=0.9,
+#     xanchor="left",
+#     xref="paper",
+#     x=0.05,
+#     font=dict(
+#         color="white",
+#         size=16
+#     )
+# )
+
+
+
 scatter_fig.update_traces(
     marker=dict(sizemin=2),
     hovertemplate='<b>Title:</b> %{hovertext}<br>'+
@@ -212,13 +230,14 @@ scatter_fig.update_layout(
 config = {'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale','lasso2d','select2d'],
           'modeBarButtonsToAdd': ['drawopenpath']}
 st.plotly_chart(scatter_fig,on_select="rerun", key="scatter", config=config, use_container_width=True)
-if st.session_state.scatter is not None and st.session_state.scatter['selection']['points'] != []:
-    with link_container:
-        selected_points = st.session_state.scatter
-        link = selected_points['selection']['points'][0]['customdata'][3]
-        st.write(f'**Link**: {link}')
+if 'scatter' in st.session_state and st.session_state.scatter is not None and st.session_state.scatter['selection']['points'] != []:
+    selected_points = st.session_state.scatter
+    link = selected_points['selection']['points'][0]['customdata'][3]
+    webbrowser.open(link)  
+  
     # selected_df = pd.DataFrame(selected_points)
     # st.dataframe(selected_df)
+
 
 # Category analysis
 st.subheader("Category Analysis")
@@ -241,8 +260,8 @@ with col1:
         labels={
             'category': 'AMA Category',
             'num_comments': 'Number of Comments'
-        },
-        points="outliers"
+        }
+        # points="outliers"
     )
     comments_box.update_traces(
         hovertemplate='<b>Title:</b> %{customdata[0]}<br>'+
@@ -312,11 +331,9 @@ with stylable_container(
         There seems to be an elevated engagement between 2019 and 2022 very likely attributable to work from home mandates.
     """)
 
-c1,c2 = st.columns(2)
-with c1:
-    st.markdown('**AMA Performance Over Time**')
-with c2:
-    link_timeline_container = st.container()
+
+st.markdown('**AMA Performance Over Time**')
+
 timeline_fig = px.scatter(
     df,
     x='date',
@@ -361,10 +378,10 @@ timeline_fig.update_layout(
 )
 st.plotly_chart(timeline_fig,on_select="rerun", key="timeline", config=config, use_container_width=True)
 if st.session_state.timeline is not None and st.session_state.timeline['selection']['points'] != []:
-    with link_timeline_container:
-        selected_points = st.session_state.timeline
-        link = selected_points['selection']['points'][0]['customdata'][3]
-        st.write(f'**Link**: {link}')
+    selected_points = st.session_state.timeline
+    link = selected_points['selection']['points'][0]['customdata'][3]
+    webbrowser.open(link) 
+
 
 # Top contributors analysis
 st.subheader("Top Mentions in AMA and Related Titles")
