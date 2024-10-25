@@ -73,31 +73,11 @@ st.title("🏀 Reddit r/NBA AMA Analysis")
 st.sidebar.subheader("Analysis Controls")
 
 show_raw_data = st.sidebar.checkbox('Show Raw Data Sample', help="Display a sample of the raw data")
-include_outliers = st.sidebar.checkbox('Include Outliers', help="Include statistical outliers in the plots")
+include_outliers = st.sidebar.checkbox('Include Outliers', value=True, help="Include statistical outliers in the plots")
 
 min_date = df['date'].min().date()
 max_date = df['date'].max().date()
 
-start_date = st.sidebar.date_input(
-    "Start Date",
-    value=min_date,
-    min_value=min_date,
-    max_value=max_date,
-    help="Select analysis start date"
-)
-
-end_date = st.sidebar.date_input(
-    "End Date",
-    value=max_date,
-    min_value=min_date,
-    max_value=max_date,
-    help="Select analysis end date"
-)
-
-df = df[
-    (df['date'].dt.date >= start_date) &
-    (df['date'].dt.date <= end_date)
-]
 
 # Raw data display
 if show_raw_data:
@@ -136,7 +116,7 @@ with stylable_container(
                 """,
         ):
     st.markdown("""
-        This analysis focuses on measuring engagement in ask me anything (AMA) threads from the <a style='color: white' href = 'https://www.reddit.com/r/nba/' target='_blank'>NBA subreddit</a>. 
+        This analysis focuses on measuring engagement in Ask Me Anything (AMA) threads from the <a style='color: white' href = 'https://www.reddit.com/r/nba/' target='_blank'>NBA subreddit</a>. 
         It considers engagement based on the number of comments and upvotes for NBA personalities and affiliated figures. 
         The analysis aims to provide insights into the level of community interaction and the popularity of different AMAs.
     """, unsafe_allow_html = True)
@@ -163,15 +143,15 @@ st.markdown("""
     This helps identify which AMAs generated the most community interaction and which categories tend to perform better.
 """)
 
-
-st.markdown('**Community Engagement: Comments vs Upvotes**')
-c1,c2,c3 = st.columns([1,3,2])
+c1,c2 = st.columns(2)
 with c1:
-    log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
-
+    st.markdown('**Community Engagement: Comments vs Upvotes**')
 with c2:
     # st.write('')
     link_container = st.container()
+
+log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
+
 
 xmin, xmax = df['num_comments'].min(), df['num_comments'].max()
 ymax = df['score'].max()
@@ -222,7 +202,7 @@ scatter_fig.update_layout(
         xanchor="left",
         x=0.85,
         bgcolor='rgba(0,0,0,0)',
-        itemclick="toggleothers"
+        itemclick="toggleothers",
     ),
     legend_title_text='AMA Category',
     template={
@@ -260,12 +240,19 @@ with col1:
         x='category',
         y='num_comments',
         title='Comment Distribution by Category',
+        hover_data=['title', 'name', 'date','link'],
         labels={
             'category': 'AMA Category',
             'num_comments': 'Number of Comments'
         },
         points="outliers"
     )
+    comments_box.update_traces(
+        hovertemplate='<b>Title:</b> %{customdata[0]}<br>'+
+                    '<b>Participant:</b> %{customdata[1]}<br>'+
+                   '<b>Date:</b> %{customdata[2]}<br>'+
+                   '<b>Number of Comments:</b> %{x}<br>'+
+                   '<b>Number of Upvotes:</b> %{y}')
     comments_box.update_layout(
         dragmode=False,
         height=500,
@@ -273,7 +260,7 @@ with col1:
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(comments_box, use_container_width=True)
+    st.plotly_chart(comments_box, config = config, use_container_width=True)
 
 with col2:
     score_box = px.box(
@@ -281,12 +268,19 @@ with col2:
         x='category',
         y='score',
         title='Upvote Distribution by Category',
+        hover_data=['title', 'name', 'date','link'],
         labels={
             'category': 'AMA Category',
             'score': 'Number of Upvotes'
         },
         points="outliers"
     )
+    score_box.update_traces(
+        hovertemplate='<b>Title:</b> %{customdata[0]}<br>'+
+                    '<b>Participant:</b> %{customdata[1]}<br>'+
+                   '<b>Date:</b> %{customdata[2]}<br>'+
+                   '<b>Number of Comments:</b> %{x}<br>'+
+                   '<b>Number of Upvotes:</b> %{y}')
     score_box.update_layout(
         dragmode=False,
         height=500,
@@ -294,7 +288,7 @@ with col2:
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(score_box, use_container_width=True)
+    st.plotly_chart(score_box, config = config, use_container_width=True)
 
 # Timeline analysis
 st.subheader("Timeline Analysis")
@@ -319,14 +313,20 @@ with stylable_container(
         The size of each point represents the number of comments, while the vertical position shows upvotes. 
         This helps identify trends, seasonal patterns, and whether certain categories perform better during specific time periods.
     """)
+
+c1,c2 = st.columns(2)
+with c1:
+    st.markdown('**AMA Performance Over Time**')
+with c2:
+    link_timeline_container = st.container()
 timeline_fig = px.scatter(
     df,
     x='date',
     y='score',
     color='category',
     size='num_comments',
-    hover_data=['title', 'name'],
-    title='AMA Performance Over Time',
+    hover_data=['title', 'name','num_comments','link'],
+    # title='AMA Performance Over Time',
     labels={
         'date': 'Date',
         'score': 'Number of Upvotes',
@@ -341,19 +341,32 @@ timeline_fig.update_traces(
                    '<b>Participant:</b> %{customdata[1]}<br>'+
                    '<b>Date:</b> %{x}<br>'+
                    '<b>Number of Comments:</b> %{customdata[2]}<br>'+
-                   '<b>Number of Upvotes:</b> %{y}',
-    customdata=np.stack((df['title'], df['name'], df['num_comments']), axis=-1)
+                   '<b>Number of Upvotes:</b> %{y}'
 )
 
 timeline_fig.update_layout(
     dragmode=False,
-    height=500,
+    height=600,
     legend_title_text='AMA Category',
     xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=False)
+    yaxis=dict(showgrid=False),
+    xaxis_range = (df.date.min()- pd.Timedelta(days=30), df.date.max()+ pd.Timedelta(days=30)),
+    yaxis_range = (0,df.score.max()*1.1),
+    legend=dict(
+        yanchor="top",
+        y=1,
+        xanchor="left",
+        x=0.85,
+        bgcolor='rgba(0,0,0,0)',
+        itemclick="toggleothers",
+    ),
 )
-st.plotly_chart(timeline_fig, use_container_width=True)
-
+st.plotly_chart(timeline_fig,on_select="rerun", key="timeline", config=config, use_container_width=True)
+if st.session_state.timeline is not None and st.session_state.timeline['selection']['points'] != []:
+    with link_timeline_container:
+        selected_points = st.session_state.timeline
+        link = selected_points['selection']['points'][0]['customdata'][3]
+        st.write(f'**Link**: {link}')
 
 # Top contributors analysis
 st.subheader("Top Contributors Analysis")
@@ -400,7 +413,7 @@ fig_contributors.update_layout(
     yaxis=dict(showgrid=False),
     font=dict(size=16)
 )
-st.plotly_chart(fig_contributors, use_container_width=True)
+st.plotly_chart(fig_contributors, config = config, use_container_width=True)
 
 c1,c2 = st.columns([2,3])
 with c1:
