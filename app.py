@@ -371,7 +371,7 @@ if st.session_state.timeline is not None and st.session_state.timeline['selectio
         st.write(f'**Link**: {link}')
 
 # Top contributors analysis
-st.subheader("Top Contributors Analysis")
+st.subheader("Top Mentions in AMA and Related Titles")
 st.markdown("""
     This bar chart highlights the most frequent AMA participants on r/NBA. 
     The chart focuses on participants who have conducted multiple AMAs, showing their total contribution to the community. 
