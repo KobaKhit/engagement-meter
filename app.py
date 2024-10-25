@@ -12,6 +12,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+
+
 # Custom CSS for better styling
 st.markdown("""
     <style>
@@ -72,25 +74,7 @@ st.title("🏀 Reddit r/NBA AMA Analysis")
 # Control panel
 st.sidebar.subheader("Analysis Controls")
 
-show_raw_data = st.sidebar.checkbox('Show Raw Data Sample', help="Display a sample of the raw data")
 include_outliers = st.sidebar.checkbox('Include Outliers', value=True, help="Include statistical outliers in the plots")
-
-min_date = df['date'].min().date()
-max_date = df['date'].max().date()
-
-
-# Raw data display
-if show_raw_data:
-    st.subheader("Raw Data Sample")
-    st.markdown("""
-        Below is a sample of the raw data showing the most recent AMAs. The table includes key information such as titles, 
-        participant names, categories, engagement metrics, and dates.
-    """)
-    st.dataframe(
-        df[['title', 'name', 'category', 'num_comments', 'score', 'date']]
-        .head(10)
-        .style.highlight_max(axis=0, subset=['num_comments', 'score'])
-    )
 
 # st.divider()
 # Key metrics
@@ -120,7 +104,13 @@ with stylable_container(
         It considers engagement based on the number of comments and upvotes for NBA personalities and affiliated figures. 
         The analysis aims to provide insights into the level of community interaction and the popularity of different AMAs.
     """, unsafe_allow_html = True)
-metric_cols = st.columns(4)
+
+
+with st.popover('Data', use_container_width=True):
+    st.markdown('''The category and name data were extracted from the AMA thread titles using a Large Language Model. 
+                The names were extracted perfectly and about 90% of the time categories are right every time.''')
+    st.write(df)
+metric_cols = st.columns(5)
 with metric_cols[0]:
     st.metric("Total AMAs", len(df))
 with metric_cols[1]:
@@ -129,6 +119,10 @@ with metric_cols[2]:
     st.metric("Average Upvotes", int(df['score'].mean()))
 with metric_cols[3]:
     st.metric("Unique Categories", df['category'].nunique())
+with metric_cols[4]:
+    st.markdown('Date Range')
+    st.markdown(f'{df.date.dt.date.min()} to {df.date.dt.date.max()}')
+
 
 # Data filtering based on user selections
 if not include_outliers:
@@ -141,6 +135,7 @@ st.markdown("""
     This visualization shows the relationship between comments and upvotes for each AMA, with different colors representing different categories. 
     The logarithmic scales help visualize the wide range of engagement levels, while the size of each point represents the number of comments. 
     This helps identify which AMAs generated the most community interaction and which categories tend to perform better.
+    **Kevin Garnett** had the most engagement during his AMA. An NBA team attendant had the second most engaging thread.
 """)
 
 c1,c2 = st.columns(2)
@@ -225,14 +220,14 @@ if st.session_state.scatter is not None and st.session_state.scatter['selection'
     # selected_df = pd.DataFrame(selected_points)
     # st.dataframe(selected_df)
 
-with st.expander('Data'):
-    st.write(df)
 # Category analysis
 st.subheader("Category Analysis")
 st.markdown("""
     These box plots show the distribution of comments and upvotes across different AMA categories. 
     The boxes show the median and quartile ranges, while points indicate outliers. 
     This helps identify which categories consistently generate higher engagement and which ones have more variable performance.
+    Unsurprisingly, in hindsight, active and retired players have the most upward outliers in terms of engagement.
+    Interestingly, Author/Analysts have a higher average number of comments then the other categories indicating a lively discussion.
 """)
 col1, col2 = st.columns(2)
 
@@ -314,6 +309,7 @@ with stylable_container(
         This timeline visualization tracks AMA performance over time, showing how engagement patterns have evolved. 
         The size of each point represents the number of comments, while the vertical position shows upvotes. 
         This helps identify trends, seasonal patterns, and whether certain categories perform better during specific time periods.
+        There seems to be an elevated engagement between 2019 and 2022 very likely attributable to work from home mandates.
     """)
 
 c1,c2 = st.columns(2)
@@ -373,8 +369,8 @@ if st.session_state.timeline is not None and st.session_state.timeline['selectio
 # Top contributors analysis
 st.subheader("Top Mentions in AMA and Related Titles")
 st.markdown("""
-    This bar chart highlights the most frequent AMA participants on r/NBA. 
-    The chart focuses on participants who have conducted multiple AMAs, showing their total contribution to the community. 
+    This bar chart highlights the most frequent AMA participants in terms of mentions in titles on r/NBA. 
+    The chart focuses on participants who have conducted multiple AMAs and/or were menioned in the titles of AMA related threads, showing their popularity in the community. 
     The accompanying table provides detailed statistics about their average engagement metrics.
 """)
 top_contributors = df.groupby('name').agg({
@@ -417,7 +413,7 @@ fig_contributors.update_layout(
 )
 st.plotly_chart(fig_contributors, config = config, use_container_width=True)
 
-c1,c2 = st.columns([2,3])
+c1,c2 = st.columns(2)
 with c1:
     # Detailed contributor stats
     st.subheader("Top Mentions in AMA Related Threads Titles")
