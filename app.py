@@ -114,7 +114,7 @@ with st.popover('Data', use_container_width=True):
     st.write(df)
 metric_cols = st.columns(5)
 with metric_cols[0]:
-    st.metric("Total AMAs", len(df))
+    st.metric("Total Threads", len(df))
 with metric_cols[1]:
     st.metric("Average Comments", int(df['num_comments'].mean()))
 with metric_cols[2]:
