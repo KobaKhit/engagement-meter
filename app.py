@@ -218,9 +218,9 @@ scatter_fig.update_layout(
     yaxis_range=(0.1,ymax*1.1),
     legend=dict(
         yanchor="top",
-        y=0.99,
+        y=0.60,
         xanchor="left",
-        x=1.02,
+        x=0.85,
         bgcolor='rgba(0,0,0,0)',
         itemclick="toggleothers"
     ),
@@ -267,6 +267,7 @@ with col1:
         points="outliers"
     )
     comments_box.update_layout(
+        dragmode=False,
         height=500,
         xaxis_tickangle=-45,
         xaxis=dict(showgrid=False),
@@ -287,6 +288,7 @@ with col2:
         points="outliers"
     )
     score_box.update_layout(
+        dragmode=False,
         height=500,
         xaxis_tickangle=-45,
         xaxis=dict(showgrid=False),
@@ -388,6 +390,7 @@ fig_contributors = px.bar(
 fig_contributors.update_traces(textposition='outside')
 
 fig_contributors.update_layout(
+    dragmode=False,
     height=500,
     xaxis_tickangle=-45,
     yaxis_range = (0,top_contributors_bar['Number of AMAs'].max()*1.2),
