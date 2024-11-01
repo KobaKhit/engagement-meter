@@ -439,7 +439,7 @@ fig_contributors = px.bar(
     
     labels={
         'name': 'Participant Name',
-        'Number of AMAs': 'Number of AMAs Conducted'
+        'Number of AMAs': 'Number of AMAs and Related Threads'
     }
 )
 
