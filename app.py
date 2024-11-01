@@ -67,6 +67,11 @@ def remove_outliers(df, column):
     ]
     return df_filtered
 
+if 'scatter_link' not in st.session_state:
+    st.session_state.scatter_link = None
+if 'timeline_link' not in st.session_state:
+    st.session_state.timeline_link = None
+
 # Load data
 df = load_and_process_data()
 
@@ -139,9 +144,13 @@ st.markdown("""
     This helps identify which AMAs generated the most community interaction and which categories tend to perform better.
     **Kevin Garnett** had the most engagement during his AMA. An NBA team attendant had the second most engaging thread.
 """)
+c1,c2 = st.columns(2)
 
+with c1:
+    st.markdown('**Community Engagement: Comments vs Upvotes**')
+with c2:
+    link_container = st.empty()
 
-st.markdown('**Community Engagement: Comments vs Upvotes**')
 
 log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
 
@@ -150,8 +159,8 @@ xmin, xmax = df['num_comments'].min(), df['num_comments'].max()
 ymax = df['score'].max()
 if log_scale_switch:
     xmin = np.log1p(df['num_comments']).min()-0.1
-    xmax = np.log10(df['num_comments']).max()+0.2
-    ymax = np.log10(df['score']).max()+0.2
+    xmax = np.log10(df['num_comments']+1).max()+0.2
+    ymax = np.log10(df['score']+1).max()+0.2
 
 
 scatter_fig = px.scatter(
@@ -230,10 +239,17 @@ scatter_fig.update_layout(
 config = {'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale','lasso2d','select2d'],
           'modeBarButtonsToAdd': ['drawopenpath']}
 st.plotly_chart(scatter_fig,on_select="rerun", key="scatter", config=config, use_container_width=True)
+st.session_state.scatter_link = None
 if 'scatter' in st.session_state and st.session_state.scatter is not None and st.session_state.scatter['selection']['points'] != []:
     selected_points = st.session_state.scatter
     link = selected_points['selection']['points'][0]['customdata'][3]
+    st.session_state.scatter_link = link
+    with link_container:
+        st.markdown(f'**Link**: {link}')
+
     webbrowser.open(link)  
+
+
   
     # selected_df = pd.DataFrame(selected_points)
     # st.dataframe(selected_df)
@@ -332,7 +348,13 @@ with stylable_container(
     """)
 
 
-st.markdown('**AMA Performance Over Time**')
+
+c1,c2 = st.columns(2)
+
+with c1:
+    st.markdown('**AMA Performance Over Time**')
+with c2:
+    link_timeline_container = st.empty()
 
 timeline_fig = px.scatter(
     df,
@@ -377,10 +399,15 @@ timeline_fig.update_layout(
     ),
 )
 st.plotly_chart(timeline_fig,on_select="rerun", key="timeline", config=config, use_container_width=True)
+st.session_state.timeline_link = None
 if st.session_state.timeline is not None and st.session_state.timeline['selection']['points'] != []:
     selected_points = st.session_state.timeline
     link = selected_points['selection']['points'][0]['customdata'][3]
+    st.session_state.timeline_link = link
     webbrowser.open(link) 
+
+    with link_timeline_container:
+        st.markdown(f'**Link**: {link}')
 
 
 # Top contributors analysis
@@ -409,6 +436,7 @@ fig_contributors = px.bar(
     y='Number of AMAs',
     title='Top 10 AMA Contributors',
     text='Number of AMAs',
+    
     labels={
         'name': 'Participant Name',
         'Number of AMAs': 'Number of AMAs Conducted'
@@ -426,7 +454,9 @@ fig_contributors.update_layout(
     yaxis_title='Number of AMAs Conducted',
     xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False),
-    font=dict(size=16)
+    font=dict(size=16),
+    barcornerradius=15
+    
 )
 st.plotly_chart(fig_contributors, config = config, use_container_width=True)
 
@@ -473,5 +503,6 @@ with c2:
             x=1,
             bgcolor='rgba(0,0,0,0)'
         ),
+        font = dict(size=16)
     )
     st.plotly_chart(category_dist, use_container_width=True)
