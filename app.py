@@ -212,7 +212,7 @@ scatter_fig.update_traces(
                    '<b>Number of Upvotes:</b> %{y}')
 scatter_fig.update_layout(
     height=600,
-    dragmode=False,
+    dragmode='zoom',
     showlegend=True,
     xaxis=dict(autorange=False),
     yaxis=dict(autorange=False, showgrid = False),
@@ -227,6 +227,7 @@ scatter_fig.update_layout(
         itemclick="toggleothers",
     ),
     legend_title_text='AMA Category',
+    newshape_line_color='#d93900',
     template={
         "layout": {
             "hovermode": "closest",
@@ -264,15 +265,17 @@ st.markdown("""
     Unsurprisingly, in hindsight, active and retired players have the most upward outliers in terms of engagement.
     Interestingly, Author/Analysts have a higher average number of comments then the other categories indicating a lively discussion.
 """)
+cat_log = st.toggle('Log Scale', value=True, help='Applying log trasnform to $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
 col1, col2 = st.columns(2)
 
 with col1:
     comments_box = px.box(
-        df,
+        df.sort_values('num_comments', ascending=False),
         x='category',
         y='num_comments',
         title='Comment Distribution by Category',
         hover_data=['title', 'name', 'date','link'],
+        log_y=cat_log,
         labels={
             'category': 'AMA Category',
             'num_comments': 'Number of Comments'
@@ -296,11 +299,12 @@ with col1:
 
 with col2:
     score_box = px.box(
-        df,
+        df.sort_values('score', ascending=False),
         x='category',
         y='score',
         title='Upvote Distribution by Category',
         hover_data=['title', 'name', 'date','link'],
+        log_y=cat_log,
         labels={
             'category': 'AMA Category',
             'score': 'Number of Upvotes'
@@ -382,13 +386,14 @@ timeline_fig.update_traces(
 )
 
 timeline_fig.update_layout(
-    dragmode=False,
+    dragmode='zoom',
     height=600,
     legend_title_text='AMA Category',
     xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False),
     xaxis_range = (df.date.min()- pd.Timedelta(days=30), df.date.max()+ pd.Timedelta(days=30)),
     yaxis_range = (0,df.score.max()*1.1),
+    newshape_line_color='#1e41e8',
     legend=dict(
         yanchor="top",
         y=1,
