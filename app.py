@@ -269,8 +269,9 @@ cat_log = st.toggle('Log Scale', value=True, help='Applying log trasnform to $y$
 col1, col2 = st.columns(2)
 
 with col1:
-    comments_box = px.box(
+    comments_violin = px.violin(
         df.sort_values('num_comments', ascending=False),
+        box = True,
         x='category',
         y='num_comments',
         title='Comment Distribution by Category',
@@ -279,23 +280,23 @@ with col1:
         labels={
             'category': 'AMA Category',
             'num_comments': 'Number of Comments'
-        }
-        # points="outliers"
+        },
+        points="all"
     )
-    comments_box.update_traces(
+    comments_violin.update_traces(
         hovertemplate='<b>Title:</b> %{customdata[0]}<br>'+
                     '<b>Participant:</b> %{customdata[1]}<br>'+
                    '<b>Date:</b> %{customdata[2]}<br>'+
                    '<b>Number of Comments:</b> %{x}<br>'+
                    '<b>Number of Upvotes:</b> %{y}')
-    comments_box.update_layout(
+    comments_violin.update_layout(
         dragmode=False,
         height=500,
         xaxis_tickangle=-45,
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(comments_box, config = config, use_container_width=True)
+    st.plotly_chart(comments_violin, config = config, use_container_width=True)
 
 with col2:
     score_box = px.box(
