@@ -3,6 +3,8 @@
 
 The intent of this tool is to enable users measure engagement levels of communities based on thread upvotes and comments.
 
+![Alt text](assets/rnba.PNG)
+
 **Features**
   - Scatter Plot Analysis
 
@@ -26,7 +28,7 @@ The intent of this tool is to enable users measure engagement levels of communit
     Provides insights into the categories that receive the most upvotes and those with more variability in performance.
 
 
-![Alt text](assets/timeline.png)
+![Alt text](assets/timeline.PNG)
 
-![Alt text](assets/scattter.png)
+![Alt text](assets/scattter.PNG)
 
