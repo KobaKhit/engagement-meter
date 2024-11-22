@@ -269,11 +269,12 @@ cat_log = st.toggle('Log Scale', value=True, help='Applying log trasnform to $y$
 col1, col2 = st.columns(2)
 
 with col1:
-    comments_violin = px.violin(
+    comments_violin = px.box(
         df.sort_values('num_comments', ascending=False),
-        box = True,
+        # box = True,
         x='category',
         y='num_comments',
+        color='category',
         title='Comment Distribution by Category',
         hover_data=['title', 'name', 'date','link'],
         log_y=cat_log,
@@ -294,7 +295,8 @@ with col1:
         height=500,
         xaxis_tickangle=-45,
         xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False)
+        yaxis=dict(showgrid=False),
+        showlegend=False
     )
     st.plotly_chart(comments_violin, config = config, use_container_width=True)
 
@@ -304,13 +306,14 @@ with col2:
         x='category',
         y='score',
         title='Upvote Distribution by Category',
+        color='category',
         hover_data=['title', 'name', 'date','link'],
         log_y=cat_log,
         labels={
             'category': 'AMA Category',
             'score': 'Number of Upvotes'
         },
-        points="outliers"
+        points="all"
     )
     score_box.update_traces(
         hovertemplate='<b>Title:</b> %{customdata[0]}<br>'+
@@ -323,7 +326,8 @@ with col2:
         height=500,
         xaxis_tickangle=-45,
         xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False)
+        yaxis=dict(showgrid=False),
+        showlegend=False
     )
     st.plotly_chart(score_box, config = config, use_container_width=True)
 
@@ -353,8 +357,12 @@ with stylable_container(
     """)
 
 
-
+time_log = st.toggle('Log Scale', value=False, help='Applying log trasnform to $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns',key = 'time_log')
 c1,c2 = st.columns(2)
+
+ymax = df['score'].max()
+if time_log:
+    ymax = np.log10(df['score']+1).max()+0.2
 
 with c1:
     st.markdown('**AMA Performance Over Time**')
@@ -369,6 +377,7 @@ timeline_fig = px.scatter(
     size='num_comments',
     hover_data=['title', 'name','num_comments','link'],
     # title='AMA Performance Over Time',
+    log_y=time_log,
     labels={
         'date': 'Date',
         'score': 'Number of Upvotes',
@@ -379,6 +388,7 @@ timeline_fig = px.scatter(
 )
 
 timeline_fig.update_traces(
+    marker=dict(sizemin=3),
     hovertemplate='<b>Title:</b> %{customdata[0]}<br>'+
                    '<b>Participant:</b> %{customdata[1]}<br>'+
                    '<b>Date:</b> %{x}<br>'+
@@ -393,7 +403,7 @@ timeline_fig.update_layout(
     xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False),
     xaxis_range = (df.date.min()- pd.Timedelta(days=30), df.date.max()+ pd.Timedelta(days=30)),
-    yaxis_range = (0,df.score.max()*1.1),
+    yaxis_range=(0.1,ymax*1.1),
     newshape_line_color='#1e41e8',
     legend=dict(
         yanchor="top",
