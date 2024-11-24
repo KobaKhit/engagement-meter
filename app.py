@@ -140,9 +140,9 @@ if not include_outliers:
 st.subheader("Engagement Analysis")
 st.markdown("""
     This visualization shows the relationship between comments and upvotes for each AMA, with different colors representing different categories. 
-    The logarithmic scales help visualize the wide range of engagement levels, while the size of each point represents the number of comments. 
-    This helps identify which AMAs generated the most community interaction and which categories tend to perform better.
-    **Kevin Garnett** had the most engagement during his AMA. An NBA team attendant had the second most engaging thread.
+    The logarithmic scales reduces the gaps between numbers and help visualize the wide range of engagement levels, while the size of each point represents the number of comments. 
+    This helps identify which AMAs generated the most community interaction.
+    **Anthon Davis** and **Kevin Garnett** had the most engagement in their AMAs. An NBA team attendant aka ballboy had the third most engaging thread.
 """)
 c1,c2 = st.columns(2)
 
@@ -152,7 +152,7 @@ with c2:
     link_container = st.empty()
 
 
-log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
+log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values reduces gaps between numbers and helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
 
 
 xmin, xmax = df['num_comments'].min(), df['num_comments'].max()
@@ -265,7 +265,7 @@ st.markdown("""
     Unsurprisingly, in hindsight, active and retired players have the most upward outliers in terms of engagement.
     Interestingly, Author/Analysts have a higher average number of comments then the other categories indicating a lively discussion.
 """)
-cat_log = st.toggle('Log Scale', value=True, help='Applying log trasnform to $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
+cat_log = st.toggle('Log Scale', value=True, help='Applying log trasnform to $y$ values reduces gaps between numbers and helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
 col1, col2 = st.columns(2)
 
 with col1:
@@ -357,7 +357,7 @@ with stylable_container(
     """)
 
 
-time_log = st.toggle('Log Scale', value=False, help='Applying log trasnform to $y$ values helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns',key = 'time_log')
+time_log = st.toggle('Log Scale', value=False, help='Applying log trasnform to $y$ values reduces gaps between numbers and helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns',key = 'time_log')
 c1,c2 = st.columns(2)
 
 ymax = df['score'].max()
@@ -429,7 +429,7 @@ if st.session_state.timeline is not None and st.session_state.timeline['selectio
 # Top contributors analysis
 st.subheader("Top Mentions in AMA and Related Titles")
 st.markdown("""
-    This bar chart highlights the most frequent AMA participants in terms of mentions in titles on r/NBA. 
+    This bar chart highlights the most frequent AMA participants in terms of mentions in thread titles on r/NBA. 
     The chart focuses on participants who have conducted multiple AMAs and/or were menioned in the titles of AMA related threads, showing their popularity in the community. 
     The accompanying table provides detailed statistics about their average engagement metrics.
 """)
