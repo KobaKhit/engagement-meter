@@ -90,7 +90,7 @@ with stylable_container(
                     border-radius: 10px;
                     border-color: red !important;
                     width:105%;
-                    padding: 15px
+                    padding: 10px 10px;
                     
                 }
                 """,
