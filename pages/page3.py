@@ -63,7 +63,7 @@ author_metrics.columns = ['Post Count', 'Avg Score', 'Total Score',
                          'Avg Comments', 'Total Comments']
 author_metrics = author_metrics.reset_index()
 # Show top authors table
-top_authors = author_metrics.sort_values('Total Score', ascending=False).head(10)
+top_authors = author_metrics.sort_values('Total Score', ascending=False)
 st.dataframe(top_authors, use_container_width=True)
 # Visualization section
 st.subheader("Engagement Analysis")
