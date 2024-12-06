@@ -133,16 +133,15 @@ st.markdown("""
     This helps identify which AMAs generated the most community interaction.
     **Anthon Davis** and **Kevin Garnett** had the most engagement in their AMAs. An NBA team attendant aka ballboy had the third most engaging thread.
 """)
-c1,c2,c3, c4 = st.columns([3,1,2,3])
+c1,c2,c3, c4 = st.columns([3,2,1,3])
 
 with c1:
     st.markdown('**Community Engagement: Comments vs Upvotes**')
-with c4:
-    link_container = st.empty()
 
 with c2:
     log_scale_switch = st.toggle('Log Scale', value=True, help='Applying log trasnform to $x$ and $y$ values reduces gaps between numbers and helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns')
-
+with c4:
+    link_container = st.empty()
 
 xmin, xmax = df['num_comments'].min(), df['num_comments'].max()
 ymax = df['score'].max()
