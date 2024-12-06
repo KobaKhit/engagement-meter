@@ -70,9 +70,6 @@ df = load_and_process_data()
 # Main title
 st.title("🏀 Reddit r/NBA AMA Analysis")
 
-# Control panel
-st.sidebar.subheader("Analysis Controls")
-
 include_outliers = True # st.sidebar.checkbox('Include Outliers', value=True, help="Include statistical outliers in the plots")
 
 # st.divider()
