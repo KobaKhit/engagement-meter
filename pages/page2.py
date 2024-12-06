@@ -9,9 +9,19 @@ st.title('Organic Tracker')
 # Read data from jsonl file
 df = pd.read_json('https://storage.googleapis.com/social-data-public/sports_reddit_posts.jsonl', lines=True)
 
-df = df[(df['subreddit'] == 'nba') & 
-        (df['author'] == 'nba')]
-# st.write(df)
+# Add author filter
+authors = sorted(df['author'].unique())
+selected_author = st.selectbox('Select Author', authors, index=authors.index('nba'))
+
+subreddit_mapping = {
+    'nba': 'nba',
+    'nfl': 'nfl', 
+    'nhl': 'hockey',
+    'MLBOfficial': 'baseball'
+}
+df = df[(df['subreddit'] == subreddit_mapping.get(selected_author, 'nba')) & 
+        (df['author'] == selected_author)]
+
 # Data preprocessing
 df['created_utc'] = pd.to_datetime(df['created_utc'], unit='s').dt.tz_localize('UTC').dt.tz_convert('US/Eastern')
 df['week'] = df['created_utc'].dt.isocalendar().week
@@ -31,8 +41,8 @@ with stylable_container(
                     }
                 """,
         ):
-    st.markdown("""
-        This page tracks organic engagement metrics for posts in the NBA subreddit by the NBA account over time.
+    st.markdown(f"""
+        This page tracks organic engagement metrics for posts in the r/{subreddit_mapping.get(selected_author, 'NBA')} subreddit by the u/{selected_author.upper()} account over time.
         It provides insights into community activity patterns and popular discussion topics.
     """)
 
