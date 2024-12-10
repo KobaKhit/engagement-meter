@@ -7,12 +7,12 @@ from streamlit_extras.stylable_container import stylable_container
 
 
 st.title('Organic Tracker')
-
+with st.sidebar:
+    exclude_ads =  st.checkbox('Exclude ads')
 
 def app_view(author):
     # Read data from jsonl file
     df = pd.read_json('https://storage.googleapis.com/social-data-public/sports_reddit_posts.jsonl', lines=True)
-
     # Add author filter
     authors = sorted(df['author'].unique())
     selected_author = author # st.selectbox('Select Author', authors, index=authors.index('nba'))
@@ -23,11 +23,22 @@ def app_view(author):
         'nhl': 'hockey',
         'MLBOfficial': 'baseball'
     }
-    df = df[(df['subreddit'] == subreddit_mapping.get(selected_author, 'nba')) & 
-            (df['author'] == selected_author)]
+    if exclude_ads:
+        df = df[#(df['subreddit'] == subreddit_mapping.get(selected_author, 'nba')) & 
+                ~df['subreddit'].str.contains('u_') &
+                (df['author'] == selected_author)]
+    else:
+        df = df[#(df['subreddit'] == subreddit_mapping.get(selected_author, 'nba')) & 
+                (df['author'] == selected_author)]
+
 
     # Data preprocessing
     df['created_utc'] = pd.to_datetime(df['created_utc'], unit='s').dt.tz_localize('UTC').dt.tz_convert('US/Eastern')
+        # Convert string columns to date/datetime
+    df['created_datetime_est'] =  pd.to_datetime(df['created_utc'], unit='s').dt.tz_convert('US/Eastern')
+    df['created_date_est'] = df['created_datetime_est'].dt.date
+    
+
     df['week'] = df['created_utc'].dt.isocalendar().week
     df['week_date'] = df['created_utc'].dt.to_period('W-SUN').apply(lambda x: x.start_time.strftime('%Y-%m-%d'))
     df['week_end_date'] = df['created_utc'].dt.to_period('W-SUN').apply(lambda x: x.end_time.strftime('%Y-%m-%d'))
@@ -59,41 +70,98 @@ def app_view(author):
     with metric_cols[2]:
         st.metric("Avg Score/Post", int(df['score'].mean()))
     with metric_cols[3]:
-        st.markdown('Date Range')
-        st.markdown(f"{df['created_utc'].dt.date.min()} to {df['created_utc'].dt.date.max()}")
+        # st.markdown('Date Range')
+        # st.markdown(f"{df['created_utc'].dt.date.min()} to {df['created_utc'].dt.date.max()}")
+        # Add date range selector
+        c1,c2 = st.columns(2)
+        if 'dates' not in st.session_state:
+            st.session_state.dates = (df['created_datetime_est'].dt.date.min(), df['created_datetime_est'].dt.date.max())
 
+        with c1:    
+            date_range = st.date_input(
+                "Date Range",
+            value=st.session_state.dates,
+            min_value=st.session_state.dates[0],
+            max_value=st.session_state.dates[1],
+                key=f"date_range_{author}"
+            )
 
-    # Create scatter plot of posts by date
-    st.subheader("Post Activity Over Time")
-    # Add year selector
-    years = sorted(df['year'].unique())
-    c1,_ = st.columns([1,2])
+        with c2:
+            st.write('')
+            st.write('')
+            def reset_date_filter():
+                st.session_state[f'date_range_{author}'] = st.session_state.dates
+            st.button('Reset',on_click = reset_date_filter, key=f"reset_{author}")
+                
+        
+
+    if len(date_range) == 2:
+        mask = (df['created_date_est'] > date_range[0]) & (df['created_date_est'] <= date_range[1])
+        df = df.loc[mask]
+
+    c1,c2 = st.columns([2,1])
     with c1:
-        selected_years = st.multiselect('Select Years', years, default=[2024], key=f"scatter_year_select_{author}")
+        # Create scatter plot of posts by date
+        st.subheader("Post Activity Over Time")
+        # Add year selector
+        years = sorted(df['year'].unique())
+        c1,_ = st.columns([1,2])
+        with c1:
+            selected_years = st.multiselect('Select Years', years, default=[df['created_date_est'].max().year], key=f"scatter_year_select_{author}")
 
-    # Filter data by selected years
-    df_filtered = df[df['year'].isin(selected_years)]
-    
-    scatter_fig = px.scatter(
-        df_filtered,
-        x='created_utc',
-        y='score',
-        size='num_comments',
-        # hover_data=['title'],
-        # title='Post Activity by Date',
-        template='plotly_white'
-    )
+        # Filter data by selected years
+        df_filtered = df[df['year'].isin(selected_years)]
+        
+        scatter_fig = px.scatter(
+            df_filtered,
+            x='created_utc',
+            y='score',
+            size='num_comments',
+            # hover_data=['title'],
+            # title='Post Activity by Date',
+            template='plotly_white'
+        )
 
-    scatter_fig.update_layout(
-        height=600,
-        xaxis_title="Date",
-        yaxis_title="Score",
-        showlegend=False,
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False),
-    )
+        scatter_fig.update_layout(
+            height=600,
+            xaxis_title="Date",
+            yaxis_title="Score",
+            showlegend=False,
+            xaxis=dict(showgrid=False),
+            yaxis=dict(showgrid=False),
+        )
 
-    st.plotly_chart(scatter_fig, use_container_width=True)
+        st.plotly_chart(scatter_fig, use_container_width=True)
+    with c2: 
+        # Display embeds in container
+        st.subheader("Recent Posts")
+        embed_container = st.container(height=500)
+        with embed_container:
+            # Display embeds for each URL in the dataframe
+            c1,c2 = st.columns(2)
+            for i,r in df.sort_values('created_utc', ascending=False).head(10).iterrows():
+
+                with c1:
+                    st.markdown(f'''
+                                Title: <a href = {r.permalink} target="_blank">{r.title}</a>
+
+                                {'' if r.selftext == '' else r.selftext}
+
+                                on {r.created_datetime_est.strftime('%Y-%m-%d at %H:%M:%S')}
+            
+                                by u/**{r.author}** in r/**{r.subreddit}**
+
+                                Score: {r.score} | Comments: {r.num_comments}
+                                ''', unsafe_allow_html=True)
+                    
+                with c2:
+                    st.write('')
+                    st.markdown(f'''
+                                
+                                ''')
+                st.divider()
+                c1,c2 = st.columns(2)
+
 
     # Weekly engagement metrics table
     st.subheader("Weekly Engagement Metrics")
@@ -111,6 +179,22 @@ def app_view(author):
     weekly_metrics = weekly_metrics.sort_values('week_date', ascending=False)
 
     st.dataframe(weekly_metrics, use_container_width=True)
+    with st.expander('View All Posts'):
+        st.dataframe(df, 
+                     column_config={
+                        "permalink": st.column_config.LinkColumn(
+                            "permalink",
+                            width = 'small',
+                            help="The top trending Streamlit apps",
+                            # validate=r"^https://[a-z]+\.streamlit\.app$",
+                            max_chars=100,
+                            display_text="reddit link")
+                        },
+                     use_container_width=True)
+
+
+
+
     # Engagement trends visualization
     st.subheader("Engagement Trends")
 
@@ -118,7 +202,7 @@ def app_view(author):
     years = sorted(df['year'].unique())
     c1,_ = st.columns([1,2])
     with c1:
-        selected_years = st.multiselect('Select Years', years, default=[2024], key=f"year_select_{author}")
+        selected_years = st.multiselect('Select Years', years, default=[df['created_date_est'].max().year], key=f"year_select_{author}")
 
     # Filter data by selected years
     filtered_metrics = weekly_metrics[weekly_metrics['week_date'].str[:4].isin([str(year) for year in selected_years])]
@@ -175,33 +259,13 @@ def app_view(author):
         )
         st.plotly_chart(volume_fig, use_container_width=True)
 
-    # Display embeds in container
-    st.write(df)
-    st.subheader("Recent Posts")
-    embed_container = st.container(height=500)
-    with embed_container:
-        # Display embeds for each URL in the dataframe
-        c1,c2 = st.columns(2)
-        for i,r in df.sort_values('created_utc', ascending=False).head(10).iterrows():
-
-            with c1:
-                st.markdown(f'''**{r.author}**
-                            
-{r.created_utc}
-
-{r.score}
-
-{r.num_comments}
-                            ''')
-            with c2:
-                st.markdown(
-                    f'<iframe src="{r.url}" width="100%" style="border:none;"></iframe>',
-                    unsafe_allow_html=True
-                )
-            c1,c2 = st.columns(2)
+    
 
 
 tab1, tab2, tab3, tab4 = st.tabs(['NBA', 'NFL', 'NHL', 'MLB'])
+
+
+
 
 with tab1:
     app_view('nba')
