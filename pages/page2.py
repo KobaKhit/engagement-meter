@@ -8,7 +8,7 @@ from streamlit_extras.stylable_container import stylable_container
 
 st.title('Organic Tracker')
 with st.sidebar:
-    exclude_ads =  st.checkbox('Exclude ads')
+    exclude_ads =  st.checkbox('Exclude ads', value = True, help = 'Exclude ads from the data.')
 
 def app_view(author):
     # Read data from jsonl file
@@ -32,6 +32,7 @@ def app_view(author):
                 (df['author'] == selected_author)]
 
 
+    # st.write(df.is_created_from_ads_ui.value_counts())
     # Data preprocessing
     df['created_utc'] = pd.to_datetime(df['created_utc'], unit='s').dt.tz_localize('UTC').dt.tz_convert('US/Eastern')
         # Convert string columns to date/datetime
@@ -123,7 +124,7 @@ def app_view(author):
         )
 
         scatter_fig.update_layout(
-            height=600,
+            height=500,
             xaxis_title="Date",
             yaxis_title="Score",
             showlegend=False,
@@ -134,31 +135,26 @@ def app_view(author):
         st.plotly_chart(scatter_fig, use_container_width=True)
     with c2: 
         # Display embeds in container
-        st.subheader("Recent Posts")
+        st.subheader("50 Most Recent Posts")
         embed_container = st.container(height=500)
         with embed_container:
             # Display embeds for each URL in the dataframe
             c1,c2 = st.columns(2)
-            for i,r in df.sort_values('created_utc', ascending=False).head(10).iterrows():
+            for i,r in df.sort_values('created_utc', ascending=False).head(50).iterrows():
 
-                with c1:
-                    st.markdown(f'''
-                                Title: <a href = {r.permalink} target="_blank">{r.title}</a>
 
-                                {'' if r.selftext == '' else r.selftext}
+                st.markdown(f'''
+                            Title: <a href = {r.permalink} target="_blank">{r.title}</a>
 
-                                on {r.created_datetime_est.strftime('%Y-%m-%d at %H:%M:%S')}
-            
-                                by u/**{r.author}** in r/**{r.subreddit}**
+                            {'' if r.selftext == '' else r.selftext}
 
-                                Score: {r.score} | Comments: {r.num_comments}
-                                ''', unsafe_allow_html=True)
+                            on {r.created_datetime_est.strftime('%Y-%m-%d at %H:%M:%S')}
+        
+                            by u/**{r.author}** in r/**{r.subreddit}**
+
+                            Score: {r.score} | Comments: {r.num_comments}
+                            ''', unsafe_allow_html=True)
                     
-                with c2:
-                    st.write('')
-                    st.markdown(f'''
-                                
-                                ''')
                 st.divider()
                 c1,c2 = st.columns(2)
 
@@ -178,7 +174,7 @@ def app_view(author):
     # weekly_metrics['week_date'] = pd.to_datetime(weekly_metrics['week_date'])
     weekly_metrics = weekly_metrics.sort_values('week_date', ascending=False)
 
-    st.dataframe(weekly_metrics, use_container_width=True)
+    st.dataframe(weekly_metrics, use_container_width=True, hide_index=True)
     with st.expander('View All Posts'):
         st.dataframe(df, 
                      column_config={
@@ -190,7 +186,8 @@ def app_view(author):
                             max_chars=100,
                             display_text="reddit link")
                         },
-                     use_container_width=True)
+                     use_container_width=True,
+                     hide_index=True)
 
 
 
