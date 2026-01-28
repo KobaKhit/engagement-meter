@@ -75,28 +75,31 @@ def app_view(author):
         # st.markdown(f"{df['created_utc'].dt.date.min()} to {df['created_utc'].dt.date.max()}")
         # Add date range selector
         c1,c2 = st.columns(2)
-        if 'dates' not in st.session_state:
-            st.session_state.dates = (df['created_datetime_est'].dt.date.min(), df['created_datetime_est'].dt.date.max())
+        date_range_key = f"date_range_{author}"
+        
+        # Initialize session state for date range if not already done
+        if date_range_key not in st.session_state:
+            st.session_state[date_range_key] = (df['created_datetime_est'].dt.date.min(), df['created_datetime_est'].dt.date.max())
 
         with c1:    
             date_range = st.date_input(
                 "Date Range",
-            value=st.session_state.dates,
-            min_value=st.session_state.dates[0],
-            max_value=st.session_state.dates[1],
-                key=f"date_range_{author}"
+                value=st.session_state[date_range_key],
+                min_value=df['created_datetime_est'].dt.date.min(),
+                max_value=df['created_datetime_est'].dt.date.max(),
+                key=date_range_key
             )
 
         with c2:
             st.write('')
             st.write('')
             def reset_date_filter():
-                st.session_state[f'date_range_{author}'] = st.session_state.dates
+                st.session_state[date_range_key] = (df['created_datetime_est'].dt.date.min(), df['created_datetime_est'].dt.date.max())
             st.button('Reset',on_click = reset_date_filter, key=f"reset_{author}")
                 
         
 
-    if len(date_range) == 2:
+    if date_range and len(date_range) == 2:
         mask = (df['created_date_est'] > date_range[0]) & (df['created_date_est'] <= date_range[1])
         df = df.loc[mask]
 
