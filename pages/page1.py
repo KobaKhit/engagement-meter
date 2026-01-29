@@ -70,6 +70,8 @@ df = load_and_process_data()
 # Main title
 st.title("🏀 Reddit r/NBA AMA Analysis")
 
+st.image('../assets/rnba.PNG')
+
 include_outliers = True # st.sidebar.checkbox('Include Outliers', value=True, help="Include statistical outliers in the plots")
 
 # st.divider()
