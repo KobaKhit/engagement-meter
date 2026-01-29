@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from streamlit_extras.stylable_container import stylable_container
 import numpy as np
 import webbrowser
 
@@ -70,7 +69,7 @@ df = load_and_process_data()
 # Main title
 st.title("🏀 Reddit r/NBA AMA Analysis")
 
-st.image('../assets/rnba.PNG')
+st.image('assets/rnba.PNG', width='stretch')
 
 include_outliers = True # st.sidebar.checkbox('Include Outliers', value=True, help="Include statistical outliers in the plots")
 
@@ -83,20 +82,20 @@ include_outliers = True # st.sidebar.checkbox('Include Outliers', value=True, he
 # """)
 
 
-with stylable_container(
-            key="intro",
-            css_styles="""
-                    {
-                    background-color: #1e41e8;
-                    color: white !important;
-                    border-radius: 10px;
-                    border-color: red !important;
-                    width:105%;
-                    padding: 10px 10px;
-                    
-                }
-                """,
-        ):
+css_style = """
+    background-color: #1e41e8;
+    color: white !important;
+    border-radius: 10px;
+    border-color: red !important;
+    width: 105%;
+    padding: 10px 10px;
+"""
+st.html(f"""
+<style>
+    .st-key-intro {{{css_style}}}
+</style>
+""")
+with st.container(key='intro'):
     st.markdown("""
         This analysis focuses on measuring engagement in Ask Me Anything (AMA) threads from the <a style='color: white' href = 'https://www.reddit.com/r/nba/' target='_blank'>NBA subreddit</a>. 
         It considers engagement based on the number of comments and upvotes for NBA personalities and affiliated figures. 
@@ -104,7 +103,7 @@ with stylable_container(
     """, unsafe_allow_html = True)
 
 
-with st.popover('Data', use_container_width=True):
+with st.popover('Data', width='stretch'):
     st.markdown('''The category and name data were extracted from the AMA thread titles using a Large Language Model. 
                 The names were extracted perfectly and about 90% of the time categories are right every time.''')
     st.write(df)
@@ -252,7 +251,7 @@ scatter_fig.update_layout(
 # st.write(scatter_fig.data)
 config = {'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale','lasso2d','select2d'],
           'modeBarButtonsToAdd': ['drawopenpath']}
-st.plotly_chart(scatter_fig,on_select="rerun", key="scatter", config=config, use_container_width=True)
+st.plotly_chart(scatter_fig,on_select="rerun", key="scatter", config=config, width='stretch')
 st.session_state.scatter_link = None
 if 'scatter' in st.session_state and st.session_state.scatter is not None and st.session_state.scatter['selection']['points'] != []:
     selected_points = st.session_state.scatter
@@ -311,7 +310,7 @@ with col1:
         yaxis=dict(showgrid=False),
         showlegend=False
     )
-    st.plotly_chart(comments_violin, config = config, use_container_width=True)
+    st.plotly_chart(comments_violin, config = config, width='stretch')
 
 with col2:
     score_box = px.box(
@@ -342,26 +341,26 @@ with col2:
         yaxis=dict(showgrid=False),
         showlegend=False
     )
-    st.plotly_chart(score_box, config = config, use_container_width=True)
+    st.plotly_chart(score_box, config = config, width='stretch')
 
 # Timeline analysis
 st.subheader("Timeline Analysis")
 
 
-with stylable_container(
-            key="timeline",
-            css_styles="""
-                    {
-                    background-color: #d93900;
-                    color: white !important;
-                    border-radius: 10px;
-                    border-color: red !important;
-                    width:105%;
-                    padding: 15px
-                    
-                }
-                """,
-        ):
+css_style = """
+    background-color: #d93900;
+    color: white !important;
+    border-radius: 10px;
+    border-color: red !important;
+    width: 105%;
+    padding: 15px;
+"""
+st.html(f"""
+<style>
+    .st-key-timeline {{{css_style}}}
+</style>
+""")
+with st.container(key='timeline'):
     st.markdown("""
         This timeline visualization tracks AMA performance over time, showing how engagement patterns have evolved. 
         The size of each point represents the number of comments, while the vertical position shows upvotes. 
@@ -427,10 +426,10 @@ timeline_fig.update_layout(
         itemclick="toggleothers",
     ),
 )
-st.plotly_chart(timeline_fig,on_select="rerun", key="timeline", config=config, use_container_width=True)
+st.plotly_chart(timeline_fig,on_select="rerun", key="timeline_chart", config=config, width='stretch')
 st.session_state.timeline_link = None
-if st.session_state.timeline is not None and st.session_state.timeline['selection']['points'] != []:
-    selected_points = st.session_state.timeline
+if st.session_state.timeline_chart is not None and st.session_state.timeline_chart['selection']['points'] != []:
+    selected_points = st.session_state.timeline_chart
     link = selected_points['selection']['points'][0]['customdata'][3]
     st.session_state.timeline_link = link
     webbrowser.open(link) 
@@ -487,7 +486,7 @@ fig_contributors.update_layout(
     barcornerradius=15
     
 )
-st.plotly_chart(fig_contributors, config = config, use_container_width=True)
+st.plotly_chart(fig_contributors, config = config, width='stretch')
 
 c1,c2 = st.columns(2)
 with c1:
@@ -534,4 +533,4 @@ with c2:
         ),
         font = dict(size=16)
     )
-    st.plotly_chart(category_dist, use_container_width=True)
+    st.plotly_chart(category_dist, width='stretch')

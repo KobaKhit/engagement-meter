@@ -1,7 +1,6 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-from streamlit_extras.stylable_container import stylable_container
 
 
 
@@ -46,17 +45,16 @@ def app_view(author):
     df['year'] = df['created_utc'].dt.year
 
     # Page header with styling
-    with stylable_container(
-                key=f"header_container_{author}",
-                css_styles="""
-                        {
-                        
-                        color: white !important;
-                        border-radius: 10px;
-        
-                        }
-                    """,
-            ):
+    css_style = """
+        color: white !important;
+        border-radius: 10px;
+    """
+    st.html(f"""
+    <style>
+        .st-header_container_{author}-container {{{css_style}}}
+    </style>
+    """)
+    with st.container(key=f'header_container_{author}'):
         st.markdown(f"""
             This page tracks organic engagement metrics for posts in the :blue-background[r/{subreddit_mapping.get(selected_author, 'NBA')}] subreddit by the :orange-background[u/{selected_author.upper()}] account over time.
             It provides insights into community activity patterns and popular discussion topics.
@@ -135,7 +133,7 @@ def app_view(author):
             yaxis=dict(showgrid=False),
         )
 
-        st.plotly_chart(scatter_fig, use_container_width=True)
+        st.plotly_chart(scatter_fig, width='stretch')
     with c2: 
         # Display embeds in container
         st.subheader("50 Most Recent Posts")
@@ -177,7 +175,7 @@ def app_view(author):
     # weekly_metrics['week_date'] = pd.to_datetime(weekly_metrics['week_date'])
     weekly_metrics = weekly_metrics.sort_values('week_date', ascending=False)
 
-    st.dataframe(weekly_metrics, use_container_width=True, hide_index=True)
+    st.dataframe(weekly_metrics, width='stretch', hide_index=True)
     with st.expander('View All Posts'):
         st.dataframe(df, 
                      column_config={
@@ -189,7 +187,7 @@ def app_view(author):
                             max_chars=100,
                             display_text="reddit link")
                         },
-                     use_container_width=True,
+                     width='stretch',
                      hide_index=True)
 
 
@@ -244,7 +242,7 @@ def app_view(author):
             )
         )
         
-        st.plotly_chart(comments_fig, use_container_width=True)
+        st.plotly_chart(comments_fig, width='stretch')
 
     with col2:
         volume_fig = px.line(filtered_metrics,
@@ -257,7 +255,7 @@ def app_view(author):
             yaxis=dict(showgrid=False),
             xaxis=dict(showgrid=False,title='Week')
         )
-        st.plotly_chart(volume_fig, use_container_width=True)
+        st.plotly_chart(volume_fig, width='stretch')
 
     
 

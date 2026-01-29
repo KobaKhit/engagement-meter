@@ -1,7 +1,6 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-from streamlit_extras.stylable_container import stylable_container
 
 
 st.title('Comparative Analysis')
@@ -15,17 +14,18 @@ df['created_utc'] = pd.to_datetime(df['created_utc'], unit='s').dt.tz_localize('
 df['month'] = df['created_utc'].dt.to_period('M')
 
 # Page header with styling
-with stylable_container(
-    key="header_container",
-    css_styles="""
-            {
-            background-color: #1e41e8;
-            color: white !important;
-            border-radius: 10px;
-            padding: 10px 5px
-            }
-        """,
-):
+css_style = """
+    background-color: #1e41e8;
+    color: white !important;
+    border-radius: 10px;
+    padding: 10px 5px;
+"""
+st.html(f"""
+<style>
+    .st-header_container-container {{{css_style}}}
+</style>
+""")
+with st.container(key='header_container'):
     st.markdown("""
         This page tracks posting patterns and engagement metrics across different sports subreddits for four major spotrs acconuts NBA, NFL, NHL, MLBOfficial.
         Compare how different authors perform across communities and identify top performers.
@@ -47,7 +47,7 @@ with metric_cols[3]:
     st.markdown('Date Range')
     st.markdown(f"{df['created_utc'].dt.date.min()} to {df['created_utc'].dt.date.max()}")
 
-with st.popover('Data', use_container_width=True):
+with st.popover('Data', width='stretch'):
     st.write(df)
 
 # Author Performance Analysis
@@ -64,7 +64,7 @@ author_metrics.columns = ['Post Count', 'Avg Score', 'Total Score',
 author_metrics = author_metrics.reset_index()
 # Show top authors table
 top_authors = author_metrics.sort_values('Total Score', ascending=False)
-st.dataframe(top_authors, use_container_width=True, hide_index=True)
+st.dataframe(top_authors, width='stretch', hide_index=True)
 # Visualization section
 st.subheader("Engagement Analysis")
 
@@ -123,7 +123,7 @@ with col1:
         yaxis=dict(showgrid=False)
     )
     
-    st.plotly_chart(bar_fig, use_container_width=True)
+    st.plotly_chart(bar_fig, width='stretch')
 
 with col2:
     top_10_subreddits = df.groupby('subreddit').size().nlargest(10).index
@@ -151,7 +151,7 @@ with col2:
         yaxis=dict(showgrid=False)
     )
     
-    st.plotly_chart(scatter_fig, use_container_width=True)
+    st.plotly_chart(scatter_fig, width='stretch')
 
 
 
@@ -180,4 +180,4 @@ line_fig.update_layout(
     showlegend=True
 )
 
-st.plotly_chart(line_fig, use_container_width=True)
+st.plotly_chart(line_fig, width='stretch')
