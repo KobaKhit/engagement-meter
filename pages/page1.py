@@ -369,7 +369,7 @@ with st.container(key='timeline'):
     """)
 
 
-time_log = st.toggle('Log Scale', value=False, help='Applying log trasnform to $y$ values reduces gaps between numbers and helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns',key = 'time_log')
+time_log = st.toggle('Log Scale', value=True, help='Applying log trasnform to $y$ values reduces gaps between numbers and helps visualize the wide range of engagement levels (comments and upvotes) across different AMAs, making it easier to identify trends and patterns',key = 'time_log')
 c1,c2 = st.columns(2)
 
 ymax = df['score'].max()
