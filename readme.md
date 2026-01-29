@@ -3,6 +3,9 @@
 
 The intent of this tool is to enable users measure engagement levels of communities based on thread upvotes and comments.
 
+Check it out here:
+[engagement-meter.streamlit.app](https://engagement-meter.streamlit.app/)
+
 ![Alt text](assets/rnba.PNG)
 
 **Features**
